@@ -4,6 +4,8 @@ The **Llama 3.3 70B API** is a state-of-the-art AI API, designed to deliver adva
 
 This project also includes a **chat feature** similar to ChatGPT, built to demonstrate the capabilities of the Llama 3.3 API in real-world conversational applications.
 
+![image](https://github.com/user-attachments/assets/47816e33-97c5-4792-822c-6a56a1eee9b0)
+
 ---
 
 ## Features
