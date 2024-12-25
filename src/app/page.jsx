@@ -3,36 +3,32 @@ import { useState, useRef, useEffect } from "react";
 import { IoIosSend } from "react-icons/io";
 import { ShootingStars } from "./shooting-stars";
 import { StarsBackground } from "./stars-background";
-import { HeroHighlight } from "./hero-highlight";
+import { HeroHighlight, Highlight } from "./hero-highlight";
 import { FaLinkedin } from "react-icons/fa";
 import { FaTwitter } from "react-icons/fa";
 import { FaGithub } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 export default function Home() {
   const [userInput, setUserInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [hasInteracted, setHasInteracted] = useState(false);
 
-  // Ref for chat container to handle auto-scrolling
   const chatEndRef = useRef(null);
 
-  // Function to format AI responses with markdown-like syntax for bold and lists
   const formatResponse = (text) => {
     let formattedText = text;
 
-    // Bold syntax: **text**
     formattedText = formattedText.replace(
       /\*\*(.*?)\*\*/g,
       "<strong class='font-bold'>$1</strong>"
     );
 
-    // Headings: ### text (Markdown style)
     formattedText = formattedText.replace(
       /###\s(.*?)(?=\n|$)/g,
       "<h3 class='font-bold text-lg mb-2'>$1</h3>"
     );
 
-    // Unordered lists: - or * at the beginning of a line
     formattedText = formattedText.replace(
       /(^|\n)([-*]\s)(.*?)(?=\n|$)/g,
       (match, p1, p2, p3) => {
@@ -40,7 +36,6 @@ export default function Home() {
       }
     );
 
-    // Ordered lists: 1. text
     formattedText = formattedText.replace(
       /(\d+\.\s)(.*?)(?=\n|$)/g,
       (match, p1, p2) => {
@@ -48,12 +43,10 @@ export default function Home() {
       }
     );
 
-    // Code blocks: triple backticks (```)
     formattedText = formattedText.replace(/```(.*?)```/gs, (match, code) => {
       return `<pre class="bg-gray-800 text-white p-4 rounded-lg overflow-x-auto"><code>${code}</code></pre>`;
     });
 
-    // Inline code: single backticks (`code`)
     formattedText = formattedText.replace(
       /`(.*?)`/g,
       "<code class='bg-gray-200 text-red-600 px-1 rounded'>$1</code>"
@@ -62,7 +55,6 @@ export default function Home() {
     return formattedText;
   };
 
-  // Fetch AI response
   const fetchResponse = async () => {
     if (!userInput.trim()) return;
 
@@ -72,13 +64,11 @@ export default function Home() {
       setUserInput("");
       setHasInteracted(true);
 
-      // Fetch AI response
       const response = await fetch(
         `/api?content=${encodeURIComponent(userInput)}`
       );
       const data = await response.json();
 
-      // Format and add AI message
       setMessages((prev) => [
         ...prev,
         {
@@ -95,12 +85,10 @@ export default function Home() {
     }
   };
 
-  // Handle Enter key
   const handleKeyPress = (e) => {
     if (e.key === "Enter") fetchResponse();
   };
 
-  // Scroll to the bottom when messages change
   useEffect(() => {
     requestAnimationFrame(() => {
       if (chatEndRef.current) {
@@ -125,54 +113,112 @@ export default function Home() {
   ];
 
   return (
-    
     <div className="flex flex-col h-screen text-white bg-black">
-      
       {!hasInteracted && (
         <HeroHighlight className="relative z-10">
-        <div className="flex-1 flex flex-col items-center justify-center text-center px-4 transition-all duration-500 relative z-20 font-mono">
-          <h1 className="relative mb-8 z-10 text-5xl md:text-7xl  bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600  text-center font-sans font-bold">
-            What can I help with?
-          </h1>
-          <p className="text-lg text-gray-400">
-            Powered by the Llama 3.3 70B API, it delivers advanced,
-            context-aware, and human-like responses <br></br> for a wide range
-            of AI applications, rivaling the capabilities of gpt-4.o in both
-            performance and versatility.
-          </p>
-          <div className="flex gap-4 w-full max-w-xl mt-6">
-            <input
-              type="text"
-              placeholder="Message Llama AI..."
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              className="w-full p-4 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              onClick={fetchResponse}
-              className="bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300"
+          <div className="flex-1 flex flex-col items-center justify-center text-center px-4 transition-all duration-500 relative z-20 font-mono">
+            <motion.h1
+              initial={{
+                opacity: 0,
+                y: 20,
+              }}
+              animate={{
+                opacity: 1,
+                y: [20, -5, 0],
+              }}
+              transition={{
+                duration: 0.5,
+                ease: [0.4, 0.0, 0.2, 1],
+              }}
+              className="relative mb-8 z-10 text-5xl md:text-7xl  bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600  text-center font-sans font-bold"
             >
-              <IoIosSend size={30} />
-            </button>
-          </div>
-          <nav className="flex flex-row m-8 items-center gap-8">
-            {footerLinks.map((link, index) => (
-              <a
-                href={link.href}
-                key={index}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 transform hover:scale-150 transition-transform duration-300 ease-in-out"
+              What can I help with?
+            </motion.h1>
+
+            <motion.p
+              initial={{
+                opacity: 0,
+                y: 20,
+              }}
+              animate={{
+                opacity: 1,
+                y: [20, -5, 0],
+              }}
+              transition={{
+                duration: 1,
+                ease: [0.4, 0.0, 0.2, 1],
+              }}
+              className="text-lg text-gray-400"
+            >
+              Powered by the{" "}
+              <Highlight className="text-white">Llama 3.3 70B</Highlight> API
+              Highlight, it delivers advanced, context-aware, and human-like
+              responses <br></br> for a wide range of AI applications, rivaling
+              the capabilities of{" "}
+              <Highlight className="text-white">gpt-4.o</Highlight> in both
+              performance and versatility.
+            </motion.p>
+
+            <motion.div
+              initial={{
+                opacity: 0,
+                y: 20,
+              }}
+              animate={{
+                opacity: 1,
+                y: [20, -5, 0],
+              }}
+              transition={{
+                duration: 1.5,
+                ease: [0.4, 0.0, 0.2, 1],
+              }}
+              className="flex gap-4 w-full max-w-xl mt-6"
+            >
+              <input
+                type="text"
+                placeholder="Message Llama AI..."
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                className="w-full p-4 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={fetchResponse}
+                className="bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300"
               >
-                <span>{link.icon}</span>
-              </a>
-            ))}
-          </nav>
-        </div>
+                <IoIosSend size={30} />
+              </button>
+            </motion.div>
+            <motion.nav
+              initial={{
+                opacity: 0,
+                y: 20,
+              }}
+              animate={{
+                opacity: 1,
+                y: [20, -5, 0],
+              }}
+              transition={{
+                duration: 2,
+                ease: [0.4, 0.0, 0.2, 1],
+              }}
+              className="flex flex-row m-8 items-center gap-8"
+            >
+              {footerLinks.map((link, index) => (
+                <a
+                  href={link.href}
+                  key={index}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 transform hover:scale-150 transition-transform duration-300 ease-in-out"
+                >
+                  <span>{link.icon}</span>
+                </a>
+              ))}
+            </motion.nav>
+          </div>
         </HeroHighlight>
       )}
-
 
       {hasInteracted && (
         <div className="flex-1 overflow-y-auto px-4 py-6 flex justify-center relative font-mono">
@@ -201,7 +247,6 @@ export default function Home() {
           <StarsBackground />
         </div>
       )}
-
 
       {hasInteracted && (
         <div className="w-full border-t border-gray-700 bg-gray-800 p-4 fixed bottom-0 transition-all ease-in-out duration-500 z-10 font-mono">
