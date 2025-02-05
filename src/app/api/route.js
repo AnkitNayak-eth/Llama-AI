@@ -13,7 +13,7 @@ async function getGroqChatCompletion(content) {
                 content: content
             }
         ],
-        model: "llama-3.2-3b-preview"
+        model: "llama-3.3-70b-versatile"
     });
 }
 
