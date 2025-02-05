@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { IoIosSend } from "react-icons/io";
 import { ShootingStars } from "./shooting-stars";
 import { StarsBackground } from "./stars-background";
@@ -8,11 +8,16 @@ import { FaLinkedin } from "react-icons/fa";
 import { FaTwitter } from "react-icons/fa";
 import { FaGithub } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Home() {
   const [userInput, setUserInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [allUserInputs, setAllUserInputs] = useState("");
+  console.log("conversation", allUserInputs);
+  
+
 
   const chatEndRef = useRef(null);
 
@@ -55,6 +60,23 @@ export default function Home() {
     return formattedText;
   };
 
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("userId");
+    if (!storedUserId) {
+      const newUserId = uuidv4();
+      localStorage.setItem("userId", newUserId);
+    }
+  
+    return () => {
+      // Clear user ID when leaving
+      localStorage.removeItem("userId");
+    };
+  }, []);
+
+  const userId = localStorage.getItem("userId");
+
+  
+
   const fetchResponse = async () => {
     if (!userInput.trim()) return;
 
@@ -64,8 +86,11 @@ export default function Home() {
       setUserInput("");
       setHasInteracted(true);
 
+      // Update the allUserInputs state with the latest input
+      setAllUserInputs((prev) => (prev ? `${prev}\n${userInput}` : userInput));
+
       const response = await fetch(
-        `/api?content=${encodeURIComponent(userInput)}`
+        `/api?content=${encodeURIComponent(allUserInputs + "\n" + userInput)}`
       );
       const data = await response.json();
 
@@ -73,7 +98,7 @@ export default function Home() {
         ...prev,
         {
           type: "ai",
-          text: formatResponse(data.message || "Sorry, I couldn’t respond."),
+          text: data.message || "Sorry, I couldn’t respond.",
         },
       ]);
     } catch (error) {
@@ -84,6 +109,9 @@ export default function Home() {
       ]);
     }
   };
+  
+
+
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") fetchResponse();

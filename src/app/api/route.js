@@ -13,7 +13,7 @@ async function getGroqChatCompletion(content) {
                 content: content
             }
         ],
-        model: "llama-3.3-70b-versatile"
+        model: "deepseek-r1-distill-llama-70b"
     });
 }
 
