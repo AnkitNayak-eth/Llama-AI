@@ -1,12 +1,10 @@
 "use client";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { IoIosSend } from "react-icons/io";
 import { ShootingStars } from "./shooting-stars";
 import { StarsBackground } from "./stars-background";
 import { HeroHighlight, Highlight } from "./hero-highlight";
-import { FaLinkedin } from "react-icons/fa";
-import { FaTwitter } from "react-icons/fa";
-import { FaGithub } from "react-icons/fa";
+import { FaLinkedin, FaTwitter, FaGithub } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { v4 as uuidv4 } from "uuid";
 
@@ -15,67 +13,22 @@ export default function Home() {
   const [messages, setMessages] = useState([]);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [allUserInputs, setAllUserInputs] = useState("");
-  console.log("conversation", allUserInputs);
-  
+  const [userId, setUserId] = useState(null); // Store userId in state
 
+  console.log("conversation", allUserInputs);
 
   const chatEndRef = useRef(null);
 
-  const formatResponse = (text) => {
-    let formattedText = text;
-
-    formattedText = formattedText.replace(
-      /\*\*(.*?)\*\*/g,
-      "<strong class='font-bold'>$1</strong>"
-    );
-
-    formattedText = formattedText.replace(
-      /###\s(.*?)(?=\n|$)/g,
-      "<h3 class='font-bold text-lg mb-2'>$1</h3>"
-    );
-
-    formattedText = formattedText.replace(
-      /(^|\n)([-*]\s)(.*?)(?=\n|$)/g,
-      (match, p1, p2, p3) => {
-        return `${p1}<ul class='list-disc pl-5'><li>${p3}</li></ul>`;
-      }
-    );
-
-    formattedText = formattedText.replace(
-      /(\d+\.\s)(.*?)(?=\n|$)/g,
-      (match, p1, p2) => {
-        return `<ol class='list-decimal pl-5'><li>${p2}</li></ol>`;
-      }
-    );
-
-    formattedText = formattedText.replace(/```(.*?)```/gs, (match, code) => {
-      return `<pre class="bg-gray-800 text-white p-4 rounded-lg overflow-x-auto"><code>${code}</code></pre>`;
-    });
-
-    formattedText = formattedText.replace(
-      /`(.*?)`/g,
-      "<code class='bg-gray-200 text-red-600 px-1 rounded'>$1</code>"
-    );
-
-    return formattedText;
-  };
-
   useEffect(() => {
-    const storedUserId = localStorage.getItem("userId");
-    if (!storedUserId) {
-      const newUserId = uuidv4();
-      localStorage.setItem("userId", newUserId);
+    if (typeof window !== "undefined") {
+      let storedUserId = localStorage.getItem("userId");
+      if (!storedUserId) {
+        storedUserId = uuidv4();
+        localStorage.setItem("userId", storedUserId);
+      }
+      setUserId(storedUserId);
     }
-  
-    return () => {
-      // Clear user ID when leaving
-      localStorage.removeItem("userId");
-    };
   }, []);
-
-  const userId = localStorage.getItem("userId");
-
-  
 
   const fetchResponse = async () => {
     if (!userInput.trim()) return;
@@ -109,9 +62,6 @@ export default function Home() {
       ]);
     }
   };
-  
-
-
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") fetchResponse();
