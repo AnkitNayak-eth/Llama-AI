@@ -30,6 +30,63 @@ export default function Home() {
     }
   }, []);
 
+  function formatResponse(text) {
+  if (!text) return "";
+
+  const escapeHtml = (unsafe) =>
+    unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+  let escaped = escapeHtml(text);
+
+
+  escaped = escaped.replace(
+    /```(?:\w+)?\n([\s\S]*?)```/g,
+    (_, code) => `<pre><code>${code}</code></pre>`
+  );
+
+ 
+  escaped = escaped.replace(/`([^`\n]+)`/g, `<code>$1</code>`);
+
+
+  escaped = escaped.replace(/\*\*(.+?)\*\*/g, `<strong>$1</strong>`);
+
+ 
+  escaped = escaped.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, `<em>$1</em>`);
+
+  escaped = escaped.replace(
+    /((?:^\d+\.\s.*$(?:\n|$))+)/gm,
+    (match) => {
+      const items = match
+        .trim()
+        .split("\n")
+        .map((line) => line.replace(/^\d+\.\s/, ""))
+        .map((item) => `<li>${item}</li>`)
+        .join("");
+      return `<ol>${items}</ol>`;
+    }
+  );
+  escaped = escaped.replace(
+    /((?:^[*-]\s.*$(?:\n|$))+)/gm,
+    (match) => {
+      const items = match
+        .trim()
+        .split("\n")
+        .map((line) => line.replace(/^[*-]\s/, ""))
+        .map((item) => `<li>${item}</li>`)
+        .join("");
+      return `<ul>${items}</ul>`;
+    }
+  );
+  escaped = escaped.replace(/\n/g, "<br />");
+
+  return escaped;
+}
+
+
+
   const fetchResponse = async () => {
     if (!userInput.trim()) return;
 
@@ -51,7 +108,7 @@ export default function Home() {
         ...prev,
         {
           type: "ai",
-          text: data.message || "Sorry, I couldn’t respond.",
+          text: formatResponse(data.message) || "Sorry, I couldn’t respond.",
         },
       ]);
     } catch (error) {

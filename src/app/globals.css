@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+pre {
+  background-color: #1e1e1e;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-family: monospace;
+  color: #d4d4d4;
+}
+
+code {
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+
+ol {
+  margin-left: 1rem;
+  list-style-position: inside;
+  color: #ddd;
+}
+
+li {
+  margin-bottom: 0.25rem;
+}
