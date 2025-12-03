@@ -5,6 +5,7 @@ const groq = new Groq({
     apiKey: process.env.GROQ_API_KEY
 });
 
+// Call Groq LLaMA chat API
 async function getGroqChatCompletion(content) {
     return groq.chat.completions.create({
         messages: [
@@ -17,31 +18,60 @@ async function getGroqChatCompletion(content) {
     });
 }
 
-async function main(content) {
+// Process the response for clean code
+async function getCleanCode(content) {
     const chatCompletion = await getGroqChatCompletion(content);
-    return chatCompletion.choices[0]?.message?.content || "";
+    let message = chatCompletion.choices[0]?.message?.content || "";
+
+    // Extract code inside ``` blocks
+    const codeMatch = message.match(/```(?:jsx|js)?([\s\S]*?)```/);
+    if (codeMatch) {
+        message = codeMatch[1].trim();
+    }
+
+    // Remove single-line comments
+    message = message.replace(/^\s*\/\/.*$/gm, "").trim();
+
+    // Remove multi-line comments
+    message = message.replace(/\/\*[\s\S]*?\*\//g, "").trim();
+
+    return message;
 }
 
-export async function POST(request) {
-    try {
-        const { searchParams } = new URL(request.url);
-        const content = searchParams.get('content') || 'HI how are you';
-        const response = await main(content);
-        return NextResponse.json({ message: response });
-    } catch (error) {
-        console.error(error);
-        return NextResponse.json({ error: 'An error occurred' }, { status: 500 });
+// Handle both GET and POST requests
+async function handleRequest(request) {
+    const { searchParams } = new URL(request.url);
+    const contentParam = searchParams.get('content');
+    const codeParam = searchParams.get('code');
+
+    if (codeParam) {
+        // Return clean code as plain text
+        const response = await getCleanCode(codeParam);
+        return new NextResponse(response, {
+            headers: { "Content-Type": "text/plain" }
+        });
+    } else {
+        // Return normal chat response as JSON
+        const response = await getGroqChatCompletion(contentParam || "Hi, how are you?");
+        const message = response.choices[0]?.message?.content || "";
+        return NextResponse.json({ message });
     }
 }
 
 export async function GET(request) {
     try {
-        const { searchParams } = new URL(request.url);
-        const content = searchParams.get('content') || 'HI how are you';
-        const response = await main(content);
-        return NextResponse.json({ message: response });
+        return await handleRequest(request);
     } catch (error) {
         console.error(error);
-        return NextResponse.json({ error: 'An error occurred' }, { status: 500 });
+        return new NextResponse('An error occurred', { status: 500 });
+    }
+}
+
+export async function POST(request) {
+    try {
+        return await handleRequest(request);
+    } catch (error) {
+        console.error(error);
+        return new NextResponse('An error occurred', { status: 500 });
     }
 }
