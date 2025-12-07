@@ -1,84 +1,77 @@
 import { NextResponse } from 'next/server';
-import Groq from "groq-sdk";
+const Groq = require("groq-sdk");
 
 const groq = new Groq({
     apiKey: process.env.GROQ_API_KEY
 });
 
-// Streaming chat using openai/gpt-oss-120b
-async function streamGroqChat(content) {
-    const stream = await groq.chat.completions.create({
-        model: "openai/gpt-oss-120b",
+// Call Groq LLaMA chat API
+async function getGroqChatCompletion(content) {
+    return groq.chat.completions.create({
         messages: [
             {
                 role: "user",
-                content
+                content: content
             }
         ],
-        temperature: 1,
-        max_completion_tokens: 8192,
-        top_p: 1,
-        reasoning_effort: "medium",
-        stream: true
+        model: "llama-3.3-70b-versatile"
     });
-
-    let finalText = "";
-
-    for await (const chunk of stream) {
-        const delta = chunk?.choices?.[0]?.delta?.content || "";
-        finalText += delta;
-    }
-
-    return finalText.trim();
 }
 
-// Clean code extraction
+// Process the response for clean code
 async function getCleanCode(content) {
-    const message = await streamGroqChat(content);
+    const chatCompletion = await getGroqChatCompletion(content);
+    let message = chatCompletion.choices[0]?.message?.content || "";
 
     // Extract code inside ``` blocks
     const codeMatch = message.match(/```(?:jsx|js)?([\s\S]*?)```/);
-    let cleaned = codeMatch ? codeMatch[1].trim() : message.trim();
+    if (codeMatch) {
+        message = codeMatch[1].trim();
+    }
 
-    // Remove comments
-    cleaned = cleaned.replace(/^\s*\/\/.*$/gm, "").trim();       // single-line comments
-    cleaned = cleaned.replace(/\/\*[\s\S]*?\*\//g, "").trim();   // multi-line comments
+    // Remove single-line comments
+    message = message.replace(/^\s*\/\/.*$/gm, "").trim();
 
-    return cleaned;
+    // Remove multi-line comments
+    message = message.replace(/\/\*[\s\S]*?\*\//g, "").trim();
+
+    return message;
 }
 
-// Request handler
+// Handle both GET and POST requests
 async function handleRequest(request) {
     const { searchParams } = new URL(request.url);
     const contentParam = searchParams.get('content');
     const codeParam = searchParams.get('code');
 
     if (codeParam) {
-        // Return clean code
+        // Return clean code as plain text
         const response = await getCleanCode(codeParam);
-        return new NextResponse(response, { headers: { "Content-Type": "text/plain" } });
+        return new NextResponse(response, {
+            headers: { "Content-Type": "text/plain" }
+        });
+    } else {
+        // Return normal chat response as JSON
+        const response = await getGroqChatCompletion(contentParam || "Hi, how are you?");
+        const message = response.choices[0]?.message?.content || "";
+        return NextResponse.json({ message });
     }
-
-    // Normal chat
-    const response = await streamGroqChat(contentParam || "Hi, how are you?");
-    return NextResponse.json({ message: response });
 }
 
-// GET & POST
 export async function GET(request) {
     try {
         return await handleRequest(request);
-    } catch (e) {
-        console.error(e);
-        return new NextResponse("Internal error", { status: 500 });
+    } catch (error) {
+        console.error(error);
+        return new NextResponse('An error occurred', { status: 500 });
     }
 }
 
 export async function POST(request) {
     try {
         return await handleRequest(request);
-    } catch (e) {
-        console.error(e);
-        return new NextResponse("Internal error", { status: 500 });
+    } catch (error) {
+        console.error(error);
+        return new NextResponse('An error occurred', { status: 500 });
     }
 }
