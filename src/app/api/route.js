@@ -1,77 +1,83 @@
 import { NextResponse } from 'next/server';
-const Groq = require("groq-sdk");
+import Groq from "groq-sdk";
 
 const groq = new Groq({
     apiKey: process.env.GROQ_API_KEY
 });
 
-// Call Groq LLaMA chat API
-async function getGroqChatCompletion(content) {
-    return groq.chat.completions.create({
+// Streaming chat API (JS equivalent of your Python example)
+async function streamGroqChat(content) {
+    const stream = await groq.chat.completions.create({
+        model: "meta-llama/llama-4-maverick-17b-128e-instruct",
         messages: [
             {
                 role: "user",
-                content: content
+                content
             }
         ],
-        model: "llama-3.3-70b-versatile"
+        temperature: 1,
+        max_completion_tokens: 1024,
+        top_p: 1,
+        stream: true
     });
+
+    let finalText = "";
+
+    for await (const chunk of stream) {
+        const delta = chunk?.choices?.[0]?.delta?.content || "";
+        finalText += delta;
+    }
+
+    return finalText.trim();
 }
 
-// Process the response for clean code
+// Clean code extraction logic
 async function getCleanCode(content) {
-    const chatCompletion = await getGroqChatCompletion(content);
-    let message = chatCompletion.choices[0]?.message?.content || "";
+    const message = await streamGroqChat(content);
 
     // Extract code inside ``` blocks
     const codeMatch = message.match(/```(?:jsx|js)?([\s\S]*?)```/);
-    if (codeMatch) {
-        message = codeMatch[1].trim();
-    }
+    let cleaned = codeMatch ? codeMatch[1].trim() : message.trim();
 
-    // Remove single-line comments
-    message = message.replace(/^\s*\/\/.*$/gm, "").trim();
+    // Remove comments
+    cleaned = cleaned.replace(/^\s*\/\/.*$/gm, "").trim();       // single line
+    cleaned = cleaned.replace(/\/\*[\s\S]*?\*\//g, "").trim();    // multi-line
 
-    // Remove multi-line comments
-    message = message.replace(/\/\*[\s\S]*?\*\//g, "").trim();
-
-    return message;
+    return cleaned;
 }
 
-// Handle both GET and POST requests
 async function handleRequest(request) {
     const { searchParams } = new URL(request.url);
     const contentParam = searchParams.get('content');
     const codeParam = searchParams.get('code');
 
+    // CODE MODE
     if (codeParam) {
-        // Return clean code as plain text
         const response = await getCleanCode(codeParam);
         return new NextResponse(response, {
             headers: { "Content-Type": "text/plain" }
         });
-    } else {
-        // Return normal chat response as JSON
-        const response = await getGroqChatCompletion(contentParam || "Hi, how are you?");
-        const message = response.choices[0]?.message?.content || "";
-        return NextResponse.json({ message });
     }
+
+    // CHAT MODE
+    const response = await streamGroqChat(contentParam || "Hi, how are you?");
+    return NextResponse.json({ message: response });
 }
 
 export async function GET(request) {
     try {
         return await handleRequest(request);
-    } catch (error) {
-        console.error(error);
-        return new NextResponse('An error occurred', { status: 500 });
+    } catch (e) {
+        console.error(e);
+        return new NextResponse("Internal error", { status: 500 });
     }
 }
 
 export async function POST(request) {
     try {
         return await handleRequest(request);
-    } catch (error) {
-        console.error(error);
-        return new NextResponse('An error occurred', { status: 500 });
+    } catch (e) {
+        console.error(e);
+        return new NextResponse("Internal error", { status: 500 });
     }
 }
