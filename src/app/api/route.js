@@ -5,10 +5,10 @@ const groq = new Groq({
     apiKey: process.env.GROQ_API_KEY
 });
 
-// Streaming chat API (JS equivalent of your Python example)
+// Streaming chat using openai/gpt-oss-120b
 async function streamGroqChat(content) {
     const stream = await groq.chat.completions.create({
-        model: "meta-llama/llama-4-maverick-17b-128e-instruct",
+        model: "openai/gpt-oss-120b",
         messages: [
             {
                 role: "user",
@@ -16,8 +16,9 @@ async function streamGroqChat(content) {
             }
         ],
         temperature: 1,
-        max_completion_tokens: 1024,
+        max_completion_tokens: 8192,
         top_p: 1,
+        reasoning_effort: "medium",
         stream: true
     });
 
@@ -31,7 +32,7 @@ async function streamGroqChat(content) {
     return finalText.trim();
 }
 
-// Clean code extraction logic
+// Clean code extraction
 async function getCleanCode(content) {
     const message = await streamGroqChat(content);
 
@@ -40,30 +41,30 @@ async function getCleanCode(content) {
     let cleaned = codeMatch ? codeMatch[1].trim() : message.trim();
 
     // Remove comments
-    cleaned = cleaned.replace(/^\s*\/\/.*$/gm, "").trim();       // single line
-    cleaned = cleaned.replace(/\/\*[\s\S]*?\*\//g, "").trim();    // multi-line
+    cleaned = cleaned.replace(/^\s*\/\/.*$/gm, "").trim();       // single-line comments
+    cleaned = cleaned.replace(/\/\*[\s\S]*?\*\//g, "").trim();   // multi-line comments
 
     return cleaned;
 }
 
+// Request handler
 async function handleRequest(request) {
     const { searchParams } = new URL(request.url);
     const contentParam = searchParams.get('content');
     const codeParam = searchParams.get('code');
 
-    // CODE MODE
     if (codeParam) {
+        // Return clean code
         const response = await getCleanCode(codeParam);
-        return new NextResponse(response, {
-            headers: { "Content-Type": "text/plain" }
-        });
+        return new NextResponse(response, { headers: { "Content-Type": "text/plain" } });
     }
 
-    // CHAT MODE
+    // Normal chat
     const response = await streamGroqChat(contentParam || "Hi, how are you?");
     return NextResponse.json({ message: response });
 }
 
+// GET & POST
 export async function GET(request) {
     try {
         return await handleRequest(request);
