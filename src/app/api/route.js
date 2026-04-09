@@ -1,8 +1,16 @@
-import { NextResponse } from 'next/server';
-import Groq from "groq-sdk";
+// src/app/api/route.js
 
-const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY
+import { NextResponse } from 'next/server';
+import { Ollama } from 'ollama';
+
+export const runtime = "nodejs";
+
+// ✅ Ollama Cloud Client
+const client = new Ollama({
+    host: 'https://ollama.com',
+    headers: {
+        Authorization: 'Bearer ' + process.env.OLLAMA_API_KEY
+    }
 });
 
 
@@ -14,39 +22,37 @@ function buildPrompt(input) {
         {
             role: "system",
             content: `
-You are an expert software engineer across all languages and frameworks.
+You are an expert software engineer across ALL languages and frameworks.
 
-Capabilities:
-- Java (Spring Boot)
-- JavaScript (Node.js, React, MERN, MEAN)
-- Python (FastAPI, Flask, Django)
-- System design and APIs
+You solve problems EXACTLY as required (like HackerRank / LeetCode).
 
 STRICT RULES:
-- Fully understand the problem first
-- Generate COMPLETE working solution
+- Understand the problem fully before coding
+- Return COMPLETE working solution
+- DO NOT skip logic
+- DO NOT add explanations
+- DO NOT add unnecessary changes
+- Follow exact requirements from the problem
+
+OUTPUT RULES:
 - If multiple files are needed → return ALL files
-- Do NOT skip logic
-- Do NOT explain anything
-- Output ONLY code inside code blocks
-- Ensure correctness and best practices
-- Code should be directly usable
+- Keep code clean, minimal, and correct
+- Do NOT over-engineer
+- Do NOT add extra APIs or features
+
+FORMAT STRICTLY:
+
+// filename.ext
+\`\`\`
+code
+\`\`\`
+
+If format is broken, regenerate entire answer.
 `
         },
         {
             role: "user",
-            content: `
-Solve this completely:
-
-${input}
-
-Return format:
-
-// filename
-\`\`\`
-code
-\`\`\`
-`
+            content: input
         }
     ];
 }
@@ -56,57 +62,57 @@ code
 // 🤖 LLM CALL
 // =========================
 async function callLLM(messages) {
-    const stream = await groq.chat.completions.create({
-        model: "openai/gpt-oss-120b",
-        messages,
-        temperature: 0.2,
-        reasoning_effort: "high",
-        max_completion_tokens: 8192,
-        stream: true
+    const response = await client.chat({
+        model: 'qwen3-coder-next:cloud',
+        messages
     });
 
-    let output = "";
+    return response.message.content.trim();
+}
 
-    for await (const chunk of stream) {
-        output += chunk?.choices?.[0]?.delta?.content || "";
+
+// =========================
+// 🎨 FORMAT OUTPUT
+// =========================
+function formatFiles(text) {
+    const regex = /\/\/\s*(.+?)\n```[\w]*\n([\s\S]*?)```/g;
+
+    let output = "";
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+        const fileName = match[1].trim();
+        const code = match[2].trim();
+
+        output += `${fileName}\n`;
+        output += `${"-".repeat(fileName.length)}\n\n`;
+        output += code + "\n\n\n";
     }
 
-    return output.trim();
+    return output || text.trim();
 }
 
 
 // =========================
-// 📦 EXTRACT CODE
+// ✅ VALIDATION (UNIVERSAL)
 // =========================
-function extractCode(text) {
-    const matches = [...text.matchAll(/```[\w]*\n([\s\S]*?)```/g)];
+function isValid(text) {
+    if (!text || text.length < 50) return false;
 
-    if (matches.length === 0) return text.trim();
-
-    return matches.map(m => m[1].trim()).join("\n\n");
-}
-
-
-// =========================
-// ✅ UNIVERSAL VALIDATION
-// =========================
-function validate(code) {
-    // basic universal checks
-
-    if (!code || code.length < 50) return false;
-
-    // must contain some structure
-    const hasClass = code.includes("class ");
-    const hasFunction = code.includes("function") || code.includes("def ");
-
-    return hasClass || hasFunction;
+    // Must contain at least code-like structure
+    return (
+        text.includes("class") ||
+        text.includes("function") ||
+        text.includes("def") ||
+        text.includes("import")
+    );
 }
 
 
 // =========================
 // 🔧 REPAIR PASS
 // =========================
-async function repair(code) {
+async function repair(text) {
     return await callLLM([
         {
             role: "system",
@@ -114,37 +120,39 @@ async function repair(code) {
 Fix and complete the code.
 
 Rules:
-- Add missing parts
 - Ensure full working solution
-- If multiple files are needed, include them
-- Output ONLY code
+- Add missing files if needed
+- Maintain strict format:
+
+// filename.ext
+\`\`\`
+code
+\`\`\`
 `
         },
         {
             role: "user",
-            content: code
+            content: text
         }
     ]);
 }
 
 
 // =========================
-// 🔁 PIPELINE
+// 🔁 MAIN PIPELINE
 // =========================
 async function generateCode(input) {
 
-    let output = await callLLM(buildPrompt(input));
-    let code = extractCode(output);
+    let raw = await callLLM(buildPrompt(input));
 
     let attempts = 0;
 
-    while (!validate(code) && attempts < 2) {
-        output = await repair(code);
-        code = extractCode(output);
+    while (!isValid(raw) && attempts < 2) {
+        raw = await repair(raw);
         attempts++;
     }
 
-    return code;
+    return formatFiles(raw);
 }
 
 
@@ -168,7 +176,7 @@ async function handleRequest(request) {
 
 
 // =========================
-// EXPORTS
+// GET / POST
 // =========================
 export async function GET(request) {
     try {
