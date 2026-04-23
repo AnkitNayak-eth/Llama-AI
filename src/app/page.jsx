@@ -100,15 +100,15 @@ export default function Home() {
       setAllUserInputs((prev) => (prev ? `${prev}\n${userInput}` : userInput));
 
       const response = await fetch(
-        `/api?content=${encodeURIComponent(allUserInputs + "\n" + userInput)}`
+        `/api?text=${encodeURIComponent(allUserInputs + "\n" + userInput)}`
       );
-      const data = await response.json();
+      const textResponse = await response.text();
 
       setMessages((prev) => [
         ...prev,
         {
           type: "ai",
-          text: formatResponse(data.message) || "Sorry, I couldn’t respond.",
+          text: formatResponse(textResponse) || "Sorry, I couldn’t respond.",
         },
       ]);
     } catch (error) {
@@ -186,11 +186,10 @@ export default function Home() {
               className="text-lg text-gray-400"
             >
               Powered by the{" "}
-              <Highlight className="text-white">Llama 3.3 70B</Highlight> API
-              Highlight, it delivers advanced, context-aware, and human-like
+              <Highlight className="text-white">GPT-OSS 120B</Highlight> API.
+              It delivers advanced, context-aware, and human-like
               responses <br></br> for a wide range of AI applications, rivaling
-              the capabilities of{" "}
-              <Highlight className="text-white">gpt-4.o</Highlight> in both
+              the capabilities of top-tier models in both
               performance and versatility.
             </motion.p>
 
@@ -211,17 +210,17 @@ export default function Home() {
             >
               <input
                 type="text"
-                placeholder="Message Llama AI..."
+                placeholder="Message GPT-OSS..."
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 onKeyDown={handleKeyPress}
-                className="w-full p-4 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 shadow-inner transition-all"
               />
               <button
                 onClick={fetchResponse}
-                className="bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300"
+                className="bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center group"
               >
-                <IoIosSend size={30} />
+                <IoIosSend size={30} className="group-hover:scale-110 transition-transform" />
               </button>
             </motion.div>
             <motion.nav
@@ -266,10 +265,10 @@ export default function Home() {
                 }`}
               >
                 <div
-                  className={`max-w-7xl px-4 py-3 rounded-lg ${
+                  className={`max-w-7xl px-5 py-4 rounded-2xl shadow-lg leading-relaxed ${
                     msg.type === "user"
-                      ? "bg-gray-800 text-white rounded-tr-none"
-                      : "bg-gray-800 text-white mb-32 rounded-tl-none"
+                      ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-tr-sm"
+                      : "bg-white/10 border border-white/10 backdrop-blur-md text-gray-100 mb-32 rounded-tl-sm font-sans"
                   }`}
                   dangerouslySetInnerHTML={{ __html: msg.text }}
                 />
@@ -284,21 +283,21 @@ export default function Home() {
       )}
 
       {hasInteracted && (
-        <div className="w-full border-t border-gray-700 bg-gray-800 p-4 fixed bottom-0 transition-all ease-in-out duration-500 z-10 font-mono">
+        <div className="w-full border-t border-white/10 bg-black/50 backdrop-blur-xl p-4 fixed bottom-0 transition-all ease-in-out duration-500 z-10 font-sans">
           <div className="max-w-3xl mx-auto flex items-center gap-4">
             <input
               type="text"
-              placeholder="Message Llama AI..."
+              placeholder="Message GPT-OSS..."
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
               onKeyDown={handleKeyPress}
-              className="flex-1 p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 shadow-inner transition-all"
             />
             <button
               onClick={fetchResponse}
-              className="bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300"
+              className="bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center group"
             >
-              <IoIosSend size={30} />
+              <IoIosSend size={30} className="group-hover:scale-110 transition-transform" />
             </button>
           </div>
         </div>

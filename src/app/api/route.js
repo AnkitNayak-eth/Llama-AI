@@ -2,17 +2,22 @@
 
 import { NextResponse } from 'next/server';
 import { Ollama } from 'ollama';
+import Groq from 'groq-sdk';
 
 export const runtime = "nodejs";
 
 // ✅ Ollama Cloud Client
-const client = new Ollama({
+const ollamaClient = new Ollama({
     host: 'https://ollama.com',
     headers: {
         Authorization: 'Bearer ' + process.env.OLLAMA_API_KEY
     }
 });
 
+// ✅ Groq Client
+const groqClient = new Groq({
+    apiKey: process.env.GROQ_API_KEY
+});
 
 // =========================
 // 🧠 UNIVERSAL PROMPT (OPTIMIZED)
@@ -49,10 +54,10 @@ Return all required files.
 
 
 // =========================
-// 🤖 FAST LLM CALL (NO STREAM, NO DELAY)
+// 🤖 FAST LLM CALL (OLLAMA)
 // =========================
-async function callLLM(messages) {
-    const response = await client.chat({
+async function callOllama(messages) {
+    const response = await ollamaClient.chat({
         model: 'qwen3-coder-next:cloud',
         messages,
         options: {
@@ -63,6 +68,28 @@ async function callLLM(messages) {
     return response.message?.content?.trim() || "";
 }
 
+// =========================
+// 🤖 FAST LLM CALL (GROQ)
+// =========================
+async function callGroq(input) {
+    const response = await groqClient.chat.completions.create({
+        messages: [
+            {
+                role: "system",
+                content: "You are a helpful assistant."
+            },
+            {
+                role: "user",
+                content: input
+            }
+        ],
+        model: "openai/gpt-oss-120b", 
+        temperature: 0.5,
+        max_tokens: 1024,
+    });
+
+    return response.choices[0]?.message?.content?.trim() || "";
+}
 
 // =========================
 // 🎨 CLEAN FORMATTER
@@ -93,8 +120,12 @@ function formatFiles(text) {
 // 🚀 FAST PIPELINE (NO RETRIES)
 // =========================
 async function generateCode(input) {
-    const raw = await callLLM(buildPrompt(input));
+    const raw = await callOllama(buildPrompt(input));
     return formatFiles(raw);
+}
+
+async function generateText(input) {
+    return await callGroq(input);
 }
 
 
@@ -104,12 +135,19 @@ async function generateCode(input) {
 async function handleRequest(request) {
     const { searchParams } = new URL(request.url);
 
-    const input =
-        searchParams.get('code') ||
-        searchParams.get('content') ||
-        "Hello";
+    const codeInput = searchParams.get('code');
+    const textInput = searchParams.get('text');
 
-    const result = await generateCode(input);
+    let result = "";
+
+    if (codeInput) {
+        result = await generateCode(codeInput);
+    } else if (textInput) {
+        result = await generateText(textInput);
+    } else {
+        const defaultInput = searchParams.get('content') || "Hello";
+        result = await generateCode(defaultInput); // fallback to ollama
+    }
 
     return new NextResponse(result, {
         headers: { "Content-Type": "text/plain" }
