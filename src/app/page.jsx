@@ -1,19 +1,22 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { IoIosSend } from "react-icons/io";
-import { ShootingStars } from "./shooting-stars";
 import { StarsBackground } from "./stars-background";
 import { HeroHighlight, Highlight } from "./hero-highlight";
 import { FaLinkedin, FaTwitter, FaGithub } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { v4 as uuidv4 } from "uuid";
+import { HoverBorderGradient } from "./hover-border-gradient";
+import { Orb } from "./Orb";
+import { MarkdownRenderer } from "./MarkdownRenderer";
 
 export default function Home() {
   const [userInput, setUserInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [allUserInputs, setAllUserInputs] = useState("");
-  const [userId, setUserId] = useState(null); // Store userId in state
+  const [userId, setUserId] = useState(null);
+  const [isResponding, setIsResponding] = useState(false);
 
   console.log("conversation", allUserInputs);
 
@@ -30,62 +33,6 @@ export default function Home() {
     }
   }, []);
 
-  function formatResponse(text) {
-  if (!text) return "";
-
-  const escapeHtml = (unsafe) =>
-    unsafe
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-
-  let escaped = escapeHtml(text);
-
-
-  escaped = escaped.replace(
-    /```(?:\w+)?\n([\s\S]*?)```/g,
-    (_, code) => `<pre><code>${code}</code></pre>`
-  );
-
- 
-  escaped = escaped.replace(/`([^`\n]+)`/g, `<code>$1</code>`);
-
-
-  escaped = escaped.replace(/\*\*(.+?)\*\*/g, `<strong>$1</strong>`);
-
- 
-  escaped = escaped.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, `<em>$1</em>`);
-
-  escaped = escaped.replace(
-    /((?:^\d+\.\s.*$(?:\n|$))+)/gm,
-    (match) => {
-      const items = match
-        .trim()
-        .split("\n")
-        .map((line) => line.replace(/^\d+\.\s/, ""))
-        .map((item) => `<li>${item}</li>`)
-        .join("");
-      return `<ol>${items}</ol>`;
-    }
-  );
-  escaped = escaped.replace(
-    /((?:^[*-]\s.*$(?:\n|$))+)/gm,
-    (match) => {
-      const items = match
-        .trim()
-        .split("\n")
-        .map((line) => line.replace(/^[*-]\s/, ""))
-        .map((item) => `<li>${item}</li>`)
-        .join("");
-      return `<ul>${items}</ul>`;
-    }
-  );
-  escaped = escaped.replace(/\n/g, "<br />");
-
-  return escaped;
-}
-
-
 
   const fetchResponse = async () => {
     if (!userInput.trim()) return;
@@ -99,6 +46,8 @@ export default function Home() {
       // Update the allUserInputs state with the latest input
       setAllUserInputs((prev) => (prev ? `${prev}\n${userInput}` : userInput));
 
+      setIsResponding(true);
+
       const response = await fetch(
         `/api?text=${encodeURIComponent(allUserInputs + "\n" + userInput)}`
       );
@@ -108,17 +57,56 @@ export default function Home() {
         ...prev,
         {
           type: "ai",
-          text: formatResponse(textResponse) || "Sorry, I couldn’t respond.",
+          text: "", // Start empty for typing effect
+          rawText: textResponse || "Sorry, I couldn’t respond.",
+          isTyping: true,
         },
       ]);
     } catch (error) {
       console.error("Error fetching response:", error);
+      setIsResponding(false);
       setMessages((prev) => [
         ...prev,
         { type: "ai", text: "Something went wrong. Please try again." },
       ]);
     }
   };
+
+  useEffect(() => {
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg && lastMsg.isTyping) {
+      let currentIndex = 0;
+      const interval = setInterval(() => {
+        if (currentIndex < lastMsg.rawText.length) {
+          setMessages((prev) => {
+            const newMessages = [...prev];
+            const currentMsg = { ...newMessages[newMessages.length - 1] };
+
+            // Advance by a few characters to make the typing fast
+            currentIndex += 3;
+            if (currentIndex > lastMsg.rawText.length) {
+              currentIndex = lastMsg.rawText.length;
+            }
+
+            // No more custom formatResponse, just use the raw text for MarkdownRenderer
+            currentMsg.text = lastMsg.rawText.substring(0, currentIndex);
+            newMessages[newMessages.length - 1] = currentMsg;
+            return newMessages;
+          });
+        } else {
+          clearInterval(interval);
+          setIsResponding(false);
+          setMessages((prev) => {
+            const newMessages = [...prev];
+            newMessages[newMessages.length - 1].isTyping = false;
+            return newMessages;
+          });
+        }
+      }, 15); // Speed of typing effect
+
+      return () => clearInterval(interval);
+    }
+  }, [messages.length]);
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") fetchResponse();
@@ -206,22 +194,32 @@ export default function Home() {
                 duration: 1.5,
                 ease: [0.4, 0.0, 0.2, 1],
               }}
-              className="flex gap-4 w-full max-w-xl mt-6"
+              className="flex items-center gap-3 w-full max-w-xl mt-6"
             >
-              <input
-                type="text"
-                placeholder="Message GPT-OSS..."
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                className="w-full p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 shadow-inner transition-all"
-              />
-              <button
-                onClick={fetchResponse}
-                className="bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center group"
+              <HoverBorderGradient
+                containerClassName="rounded-full flex-1 !w-full"
+                as="div"
+                duration={1}
+                className="flex items-center w-full !px-0 !py-0"
               >
-                <IoIosSend size={30} className="group-hover:scale-110 transition-transform" />
-              </button>
+                <input
+                  type="text"
+                  placeholder="Message GPT-OSS..."
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  className="w-full px-5 py-3.5 bg-transparent text-white text-left placeholder-gray-500 focus:outline-none text-base"
+                />
+              </HoverBorderGradient>
+              <HoverBorderGradient
+                containerClassName="rounded-full"
+                as="button"
+                duration={1}
+                onClick={fetchResponse}
+                className="flex items-center justify-center !px-4 !py-3.5"
+              >
+                <IoIosSend size={24} className="text-white" />
+              </HoverBorderGradient>
             </motion.div>
             <motion.nav
               initial={{
@@ -255,50 +253,77 @@ export default function Home() {
       )}
 
       {hasInteracted && (
-        <div className="flex-1 overflow-y-auto px-4 py-6 flex justify-center relative font-mono">
-          <div className="w-full max-w-3xl space-y-4 z-10">
-            {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex ${
-                  msg.type === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                <div
-                  className={`max-w-7xl px-5 py-4 rounded-2xl shadow-lg leading-relaxed ${
-                    msg.type === "user"
-                      ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-tr-sm"
-                      : "bg-white/10 border border-white/10 backdrop-blur-md text-gray-100 mb-32 rounded-tl-sm font-sans"
-                  }`}
-                  dangerouslySetInnerHTML={{ __html: msg.text }}
-                />
-              </div>
-            ))}
-
-            <div ref={chatEndRef} />
-          </div>
-          <ShootingStars />
+        <div className="fixed inset-0 z-0 pointer-events-none">
           <StarsBackground />
         </div>
       )}
 
       {hasInteracted && (
-        <div className="w-full border-t border-white/10 bg-black/50 backdrop-blur-xl p-4 fixed bottom-0 transition-all ease-in-out duration-500 z-10 font-sans">
-          <div className="max-w-3xl mx-auto flex items-center gap-4">
-            <input
-              type="text"
-              placeholder="Message GPT-OSS..."
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              className="flex-1 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 shadow-inner transition-all"
+        <div className="flex-1 overflow-y-auto px-4 py-6 flex justify-center relative font-mono z-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] z-0 opacity-60 pointer-events-none mix-blend-screen">
+            <Orb
+              isResponding={isResponding}
+              hoverIntensity={1.5}
+              rotateOnHover={true}
+              hue={140}
+              forceHoverState={false}
             />
-            <button
-              onClick={fetchResponse}
-              className="bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center group"
+          </div>
+          <div className="w-full max-w-4xl space-y-8 z-10 pt-10">
+            {messages.map((msg, idx) => (
+              <div
+                key={idx}
+                className={`flex w-full ${msg.type === "user" ? "justify-end" : "justify-start"
+                  }`}
+              >
+                <div
+                  className={`px-6 py-5 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] leading-relaxed backdrop-blur-xl ${msg.type === "user"
+                      ? "bg-green-500/10 border border-green-500/20 text-white rounded-tr-sm font-sans max-w-[80%]"
+                      : "bg-white/5 border border-white/10 text-gray-100 rounded-tl-sm font-sans w-full"
+                    }`}
+                >
+                  {msg.type === "user" ? (
+                    <span className="whitespace-pre-wrap">{msg.text}</span>
+                  ) : (
+                    <MarkdownRenderer content={msg.text} />
+                  )}
+                </div>
+              </div>
+            ))}
+
+            <div className="h-12 w-full flex-shrink-0" />
+            <div ref={chatEndRef} />
+          </div>
+        </div>
+      )}
+
+      {hasInteracted && (
+        <div className="w-full bg-black/80 backdrop-blur-xl p-4 fixed bottom-0 transition-all ease-in-out duration-500 z-10 font-sans">
+          <div className="max-w-3xl mx-auto flex items-center gap-3">
+            <HoverBorderGradient
+              containerClassName="rounded-full flex-1 !w-full"
+              as="div"
+              duration={1}
+              className="flex items-center w-full !px-0 !py-0"
             >
-              <IoIosSend size={30} className="group-hover:scale-110 transition-transform" />
-            </button>
+              <input
+                type="text"
+                placeholder="Message GPT-OSS..."
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                className="w-full px-5 py-3.5 bg-transparent text-white text-left placeholder-gray-500 focus:outline-none text-base"
+              />
+            </HoverBorderGradient>
+            <HoverBorderGradient
+              containerClassName="rounded-full"
+              as="button"
+              duration={1}
+              onClick={fetchResponse}
+              className="flex items-center justify-center !px-4 !py-3.5"
+            >
+              <IoIosSend size={24} className="text-white" />
+            </HoverBorderGradient>
           </div>
         </div>
       )}
