@@ -6,7 +6,7 @@ import Groq from 'groq-sdk';
 
 export const runtime = "nodejs";
 
-// ✅ Ollama Cloud Client
+// Ollama Cloud Client
 const ollamaClient = new Ollama({
     host: 'https://ollama.com',
     headers: {
@@ -14,13 +14,13 @@ const ollamaClient = new Ollama({
     }
 });
 
-// ✅ Groq Client
+// Groq Client
 const groqClient = new Groq({
     apiKey: process.env.GROQ_API_KEY
 });
 
 // =========================
-// 🧠 UNIVERSAL PROMPT (OPTIMIZED)
+// UNIVERSAL PROMPT (OLLAMA)
 // =========================
 function buildPrompt(input) {
     return [
@@ -54,7 +54,7 @@ Return all required files.
 
 
 // =========================
-// 🤖 FAST LLM CALL (OLLAMA)
+// LLM CALL (OLLAMA)
 // =========================
 async function callOllama(messages) {
     const response = await ollamaClient.chat({
@@ -69,30 +69,30 @@ async function callOllama(messages) {
 }
 
 // =========================
-// 🤖 FAST LLM CALL (GROQ)
+// LLM CALL (GROQ)
 // =========================
 async function callGroq(input) {
     const response = await groqClient.chat.completions.create({
         messages: [
             {
                 role: "system",
-                content: "You are a helpful assistant."
+                content: "You are GPT-OSS, a smart and versatile AI assistant. Answer any question - coding, science, general knowledge, creative writing, anything. Give well-structured, medium-length answers: enough detail to be genuinely helpful, but avoid being overly verbose or repetitive. Use markdown for formatting when it helps readability."
             },
             {
                 role: "user",
                 content: input
             }
         ],
-        model: "openai/gpt-oss-120b", 
+        model: "openai/gpt-oss-120b",
         temperature: 0.5,
-        max_tokens: 1024,
+        max_tokens: 2048,
     });
 
     return response.choices[0]?.message?.content?.trim() || "";
 }
 
 // =========================
-// 🎨 CLEAN FORMATTER
+// CLEAN FORMATTER
 // =========================
 function formatFiles(text) {
     const regex = /\/\/\s*(.+?)\n```[\w]*\n([\s\S]*?)```/g;
@@ -117,7 +117,7 @@ function formatFiles(text) {
 
 
 // =========================
-// 🚀 FAST PIPELINE (NO RETRIES)
+// PIPELINE
 // =========================
 async function generateCode(input) {
     const raw = await callOllama(buildPrompt(input));
@@ -130,7 +130,7 @@ async function generateText(input) {
 
 
 // =========================
-// 🌐 HANDLER
+// HANDLER
 // =========================
 async function handleRequest(request) {
     const { searchParams } = new URL(request.url);
@@ -146,7 +146,7 @@ async function handleRequest(request) {
         result = await generateText(textInput);
     } else {
         const defaultInput = searchParams.get('content') || "Hello";
-        result = await generateCode(defaultInput); // fallback to ollama
+        result = await generateCode(defaultInput);
     }
 
     return new NextResponse(result, {

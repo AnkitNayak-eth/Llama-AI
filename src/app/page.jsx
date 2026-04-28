@@ -58,7 +58,7 @@ export default function Home() {
         {
           type: "ai",
           text: "", // Start empty for typing effect
-          rawText: textResponse || "Sorry, I couldn’t respond.",
+          rawText: textResponse || "Sorry, I couldn't respond.",
           isTyping: true,
         },
       ]);
@@ -136,7 +136,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="flex flex-col h-screen text-white bg-black">
+    <div className="flex flex-col h-screen text-white bg-[#0a0a0a]">
       {!hasInteracted && (
         <HeroHighlight className="relative z-10">
           <div className="flex-1 flex flex-col items-center justify-center text-center px-4 transition-all duration-500 relative z-20 font-mono">
@@ -253,34 +253,41 @@ export default function Home() {
       )}
 
       {hasInteracted && (
-        <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="fixed inset-0 z-0 pointer-events-none opacity-40">
           <StarsBackground />
         </div>
       )}
 
       {hasInteracted && (
-        <div className="flex-1 overflow-y-auto px-4 py-6 flex justify-center relative font-mono z-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] z-0 opacity-60 pointer-events-none mix-blend-screen">
-            <Orb
-              isResponding={isResponding}
-              hoverIntensity={1.5}
-              rotateOnHover={true}
-              hue={140}
-              forceHoverState={false}
-            />
-          </div>
-          <div className="w-full max-w-4xl space-y-8 z-10 pt-10">
+        <div className="flex-1 overflow-y-auto px-4 py-6 flex justify-center relative font-sans z-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="w-full max-w-3xl space-y-6 pt-4 pb-6">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`flex w-full ${msg.type === "user" ? "justify-end" : "justify-start"
-                  }`}
+                className={`flex w-full ${
+                  msg.type === "user" ? "justify-end" : "justify-start"
+                }`}
               >
+                {msg.type === "ai" && (
+                  <div className="flex-shrink-0 mr-3 mt-1">
+                    <div className="w-8 h-8 rounded-full overflow-hidden">
+                      <Orb
+                        isResponding={msg.isTyping || false}
+                        hoverIntensity={msg.isTyping ? 2.5 : 0.5}
+                        rotateOnHover={true}
+                        hue={140}
+                        forceHoverState={msg.isTyping || false}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div
-                  className={`px-6 py-5 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] leading-relaxed backdrop-blur-xl ${msg.type === "user"
-                      ? "bg-green-500/10 border border-green-500/20 text-white rounded-tr-sm font-sans max-w-[80%]"
-                      : "bg-white/5 border border-white/10 text-gray-100 rounded-tl-sm font-sans w-full"
-                    }`}
+                  className={`leading-relaxed break-words ${
+                    msg.type === "user"
+                      ? "bg-[#1a1a2e] text-gray-100 px-5 py-3 rounded-2xl rounded-tr-sm max-w-[75%] text-[15px]"
+                      : "text-gray-200 flex-1 min-w-0 text-[15px]"
+                  }`}
                 >
                   {msg.type === "user" ? (
                     <span className="whitespace-pre-wrap">{msg.text}</span>
@@ -291,39 +298,52 @@ export default function Home() {
               </div>
             ))}
 
-            <div className="h-12 w-full flex-shrink-0" />
+            {/* Loading indicator when waiting for response */}
+            {isResponding && messages[messages.length - 1]?.type === "user" && (
+              <div className="flex w-full justify-start">
+                <div className="flex-shrink-0 mr-3 mt-1">
+                  <div className="w-8 h-8 rounded-full overflow-hidden">
+                    <Orb
+                      isResponding={true}
+                      hoverIntensity={2.5}
+                      rotateOnHover={true}
+                      hue={140}
+                      forceHoverState={true}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 py-3">
+                  <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:0ms]"></span>
+                  <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:150ms]"></span>
+                  <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:300ms]"></span>
+                </div>
+              </div>
+            )}
+
             <div ref={chatEndRef} />
           </div>
         </div>
       )}
 
       {hasInteracted && (
-        <div className="w-full bg-black/80 backdrop-blur-xl p-4 fixed bottom-0 transition-all ease-in-out duration-500 z-10 font-sans">
+        <div className="w-full bg-[#0a0a0a] border-t border-[#1e1e2e] p-4 flex-shrink-0 z-10 font-sans">
           <div className="max-w-3xl mx-auto flex items-center gap-3">
-            <HoverBorderGradient
-              containerClassName="rounded-full flex-1 !w-full"
-              as="div"
-              duration={1}
-              className="flex items-center w-full !px-0 !py-0"
-            >
+            <div className="flex-1 flex items-center bg-[#141420] border border-[#2a2a3e] rounded-full overflow-hidden focus-within:border-[#4a4a6e] transition-colors">
               <input
                 type="text"
                 placeholder="Message GPT-OSS..."
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 onKeyDown={handleKeyPress}
-                className="w-full px-5 py-3.5 bg-transparent text-white text-left placeholder-gray-500 focus:outline-none text-base"
+                className="w-full px-5 py-3.5 bg-transparent text-white text-left placeholder-gray-500 focus:outline-none text-[15px]"
               />
-            </HoverBorderGradient>
-            <HoverBorderGradient
-              containerClassName="rounded-full"
-              as="button"
-              duration={1}
+            </div>
+            <button
               onClick={fetchResponse}
-              className="flex items-center justify-center !px-4 !py-3.5"
+              className="flex items-center justify-center w-12 h-12 rounded-full bg-[#141420] border border-[#2a2a3e] hover:border-[#4a4a6e] hover:bg-[#1e1e30] transition-all duration-200 text-gray-300 hover:text-white"
             >
-              <IoIosSend size={24} className="text-white" />
-            </HoverBorderGradient>
+              <IoIosSend size={20} />
+            </button>
           </div>
         </div>
       )}
