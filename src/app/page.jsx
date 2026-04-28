@@ -1,13 +1,13 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { IoIosSend } from "react-icons/io";
-import { StarsBackground } from "./stars-background";
+import { GridScan } from "./GridScan";
 import { HeroHighlight, Highlight } from "./hero-highlight";
 import { FaLinkedin, FaTwitter, FaGithub } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { v4 as uuidv4 } from "uuid";
 import { HoverBorderGradient } from "./hover-border-gradient";
-import { Orb } from "./Orb";
+
 import { MarkdownRenderer } from "./MarkdownRenderer";
 
 export default function Home() {
@@ -17,6 +17,7 @@ export default function Home() {
   const [allUserInputs, setAllUserInputs] = useState("");
   const [userId, setUserId] = useState(null);
   const [isResponding, setIsResponding] = useState(false);
+  const [scanPhase, setScanPhase] = useState("idle"); // "idle" | "waiting" | "typing"
 
   console.log("conversation", allUserInputs);
 
@@ -47,12 +48,14 @@ export default function Home() {
       setAllUserInputs((prev) => (prev ? `${prev}\n${userInput}` : userInput));
 
       setIsResponding(true);
+      setScanPhase("waiting");
 
       const response = await fetch(
         `/api?text=${encodeURIComponent(allUserInputs + "\n" + userInput)}`
       );
       const textResponse = await response.text();
 
+      setScanPhase("typing");
       setMessages((prev) => [
         ...prev,
         {
@@ -65,6 +68,7 @@ export default function Home() {
     } catch (error) {
       console.error("Error fetching response:", error);
       setIsResponding(false);
+      setScanPhase("idle");
       setMessages((prev) => [
         ...prev,
         { type: "ai", text: "Something went wrong. Please try again." },
@@ -96,6 +100,7 @@ export default function Home() {
         } else {
           clearInterval(interval);
           setIsResponding(false);
+          setScanPhase("idle");
           setMessages((prev) => {
             const newMessages = [...prev];
             newMessages[newMessages.length - 1].isTyping = false;
@@ -253,8 +258,23 @@ export default function Home() {
       )}
 
       {hasInteracted && (
-        <div className="fixed inset-0 z-0 pointer-events-none opacity-40">
-          <StarsBackground />
+        <div className="fixed inset-0 z-0 opacity-50">
+          <GridScan
+            isScanning={scanPhase !== "idle"}
+            scanPhase={scanPhase}
+            sensitivity={0.55}
+            lineThickness={1}
+            linesColor="#1a1a2e"
+            gridScale={0.1}
+            scanColor="#a855f7"
+            scanOpacity={0.5}
+            enablePost={true}
+            bloomIntensity={0.6}
+            chromaticAberration={0.002}
+            noiseIntensity={0.01}
+            scanDuration={1.5}
+            scanDelay={0.5}
+          />
         </div>
       )}
 
@@ -268,19 +288,7 @@ export default function Home() {
                   msg.type === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                {msg.type === "ai" && (
-                  <div className="flex-shrink-0 mr-3 mt-1">
-                    <div className="w-8 h-8 rounded-full overflow-hidden">
-                      <Orb
-                        isResponding={msg.isTyping || false}
-                        hoverIntensity={msg.isTyping ? 2.5 : 0.5}
-                        rotateOnHover={true}
-                        hue={140}
-                        forceHoverState={msg.isTyping || false}
-                      />
-                    </div>
-                  </div>
-                )}
+
 
                 <div
                   className={`leading-relaxed break-words ${
@@ -301,17 +309,7 @@ export default function Home() {
             {/* Loading indicator when waiting for response */}
             {isResponding && messages[messages.length - 1]?.type === "user" && (
               <div className="flex w-full justify-start">
-                <div className="flex-shrink-0 mr-3 mt-1">
-                  <div className="w-8 h-8 rounded-full overflow-hidden">
-                    <Orb
-                      isResponding={true}
-                      hoverIntensity={2.5}
-                      rotateOnHover={true}
-                      hue={140}
-                      forceHoverState={true}
-                    />
-                  </div>
-                </div>
+
                 <div className="flex items-center gap-1.5 py-3">
                   <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:0ms]"></span>
                   <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:150ms]"></span>
