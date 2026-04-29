@@ -147,6 +147,7 @@ async function handleRequest(request) {
     } else {
         const defaultInput = searchParams.get('content') || "Hello";
         result = await generateCode(defaultInput);
+
     }
 
     return new NextResponse(result, {
