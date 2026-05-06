@@ -72,16 +72,15 @@ async function callOllama(messages) {
 // LLM CALL (GROQ)
 // =========================
 async function callGroq(input) {
+    const userMessages = Array.isArray(input) ? input : [{ role: "user", content: input }];
+    
     const response = await groqClient.chat.completions.create({
         messages: [
             {
                 role: "system",
-                content: "You are GPT-OSS, a smart and versatile AI assistant. Answer any question - coding, science, general knowledge, creative writing, anything. Give well-structured, medium-length answers: enough detail to be genuinely helpful, but avoid being overly verbose or repetitive. Use markdown for formatting when it helps readability."
+                content: "You are GPT-OSS, a smart and versatile AI assistant. Answer any question directly and concisely. Get straight to the point and keep your responses short. Avoid being overly verbose. Use markdown for formatting when it helps readability."
             },
-            {
-                role: "user",
-                content: input
-            }
+            ...userMessages
         ],
         model: "openai/gpt-oss-120b",
         temperature: 0.5,
@@ -133,12 +132,25 @@ async function generateText(input) {
 // HANDLER
 // =========================
 async function handleRequest(request) {
-    const { searchParams } = new URL(request.url);
+    let result = "";
 
+    if (request.method === "POST") {
+        try {
+            const body = await request.json();
+            if (body.messages) {
+                result = await generateText(body.messages);
+                return new NextResponse(result, {
+                    headers: { "Content-Type": "text/plain" }
+                });
+            }
+        } catch (e) {
+            // fallback to searchParams if no JSON body
+        }
+    }
+
+    const { searchParams } = new URL(request.url);
     const codeInput = searchParams.get('code');
     const textInput = searchParams.get('text');
-
-    let result = "";
 
     if (codeInput) {
         result = await generateCode(codeInput);
@@ -147,7 +159,6 @@ async function handleRequest(request) {
     } else {
         const defaultInput = searchParams.get('content') || "Hello";
         result = await generateCode(defaultInput);
-
     }
 
     return new NextResponse(result, {

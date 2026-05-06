@@ -82,9 +82,17 @@ export default function Home() {
       setIsResponding(true);
       setScanPhase("waiting");
 
-      const response = await fetch(
-        `/api?text=${encodeURIComponent(allUserInputs + "\n" + userInput)}`
-      );
+      // Keep only the last 12 messages to prevent exceeding token limits
+      const apiMessages = updatedMessages.slice(-12).map(msg => ({
+        role: msg.type === "user" ? "user" : "assistant",
+        content: msg.rawText || msg.text || ""
+      }));
+
+      const response = await fetch('/api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: apiMessages })
+      });
       const textResponse = await response.text();
 
       if (streaming) {
@@ -546,6 +554,8 @@ export default function Home() {
             bloomIntensity={0.6}
             chromaticAberration={0.002}
             noiseIntensity={0.01}
+            scanGlow={0.5}
+            scanSoftness={2}
             scanDuration={1.5}
             scanDelay={0.5}
           />
