@@ -366,7 +366,7 @@ export default function Home() {
                 className="text-lg text-gray-400"
               >
                 Powered by the{" "}
-                <Highlight className="text-white">GPT-OSS 120B</Highlight> API.
+                <Highlight className="text-white text-xl font-bold font-serif">Private, uncensored AI GPT-OSS 120B</Highlight> API.
                 It delivers advanced, context-aware, and human-like
                 responses <br /> for a wide range of AI applications, rivaling
                 the capabilities of top-tier models in both
@@ -375,7 +375,7 @@ export default function Home() {
             ) : (
               <p className="text-lg text-gray-400">
                 Powered by the{" "}
-                <Highlight className="text-white">GPT-OSS 120B</Highlight> API.
+                <Highlight className="text-white text-xl font-bold font-serif">Private, uncensored AI GPT-OSS 120B</Highlight> API.
                 It delivers advanced, context-aware, and human-like
                 responses <br /> for a wide range of AI applications, rivaling
                 the capabilities of top-tier models in both
@@ -488,7 +488,7 @@ export default function Home() {
               </h1>
               <p className="text-lg text-gray-400">
                 Powered by the{" "}
-                <span className="inline-block pb-1 px-1 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white">GPT-OSS 120B</span> API.
+                <span className="inline-block pb-1 px-1 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xl font-bold font-serif">Private, uncensored AI GPT-OSS 120B</span> API.
                 It delivers advanced, context-aware, and human-like
                 responses <br /> for a wide range of AI applications, rivaling
                 the capabilities of top-tier models in both
