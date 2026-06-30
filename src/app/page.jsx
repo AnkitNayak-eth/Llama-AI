@@ -53,7 +53,7 @@ export default function Home() {
           if (s.animationsEnabled !== undefined) setAnimationsEnabled(s.animationsEnabled);
           if (s.fontSize) setFontSize(s.fontSize);
           if (s.typingSpeed) setTypingSpeed(s.typingSpeed);
-        } catch {}
+        } catch { }
       }
     }
   }, []);
@@ -181,15 +181,15 @@ export default function Home() {
   const footerLinks = [
     {
       icon: <FaLinkedin className="h-6 w-6" />,
-      href: "https://www.linkedin.com/in/ankitnayaketh/",
+      href: "https://www.linkedin.com/in/ankitnayak-dev/",
     },
     {
       icon: <FaTwitter className="h-6 w-6" />,
-      href: "https://x.com/AnkitNayak_eth",
+      href: "https://x.com/AnkitNayak_dev",
     },
     {
       icon: <FaGithub className="h-6 w-6" />,
-      href: "https://github.com/AnkitNayak-eth",
+      href: "https://github.com/AnkitNayak-dev",
     },
   ];
 
@@ -230,109 +230,103 @@ export default function Home() {
                 transition={{ duration: 0.2, ease: "easeOut" }}
                 className="w-full max-w-md bg-[#111118] border border-[#2a2a3e] rounded-2xl shadow-2xl overflow-hidden pointer-events-auto"
               >
-              {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-[#2a2a3e]">
-                <h2 className="text-lg font-semibold text-white">Settings</h2>
-                <button
-                  onClick={() => setShowSettings(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#2a2a3e] transition-colors text-gray-400 hover:text-white"
-                >
-                  <IoClose size={20} />
-                </button>
-              </div>
-
-              {/* Settings Body */}
-              <div className="px-6 py-5 space-y-6">
-
-                {/* Response Streaming */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[15px] text-white font-medium">Response Streaming</p>
-                    <p className="text-[13px] text-gray-500 mt-0.5">Show response with typing animation</p>
-                  </div>
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#2a2a3e]">
+                  <h2 className="text-lg font-semibold text-white">Settings</h2>
                   <button
-                    onClick={() => setStreaming(!streaming)}
-                    className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-                      streaming ? "bg-purple-600" : "bg-[#2a2a3e]"
-                    }`}
+                    onClick={() => setShowSettings(false)}
+                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#2a2a3e] transition-colors text-gray-400 hover:text-white"
                   >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ${
-                        streaming ? "translate-x-5" : "translate-x-0"
-                      }`}
-                    />
+                    <IoClose size={20} />
                   </button>
                 </div>
 
-                {/* Animations */}
-                <div className="flex items-center justify-between">
+                {/* Settings Body */}
+                <div className="px-6 py-5 space-y-6">
+
+                  {/* Response Streaming */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[15px] text-white font-medium">Response Streaming</p>
+                      <p className="text-[13px] text-gray-500 mt-0.5">Show response with typing animation</p>
+                    </div>
+                    <button
+                      onClick={() => setStreaming(!streaming)}
+                      className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${streaming ? "bg-purple-600" : "bg-[#2a2a3e]"
+                        }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ${streaming ? "translate-x-5" : "translate-x-0"
+                          }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Animations */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[15px] text-white font-medium">Animations</p>
+                      <p className="text-[13px] text-gray-500 mt-0.5">Grid scan background & page transitions</p>
+                    </div>
+                    <button
+                      onClick={() => setAnimationsEnabled(!animationsEnabled)}
+                      className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${animationsEnabled ? "bg-purple-600" : "bg-[#2a2a3e]"
+                        }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ${animationsEnabled ? "translate-x-5" : "translate-x-0"
+                          }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="border-t border-[#2a2a3e]" />
+
+                  {/* Font Size */}
                   <div>
-                    <p className="text-[15px] text-white font-medium">Animations</p>
-                    <p className="text-[13px] text-gray-500 mt-0.5">Grid scan background & page transitions</p>
-                  </div>
-                  <button
-                    onClick={() => setAnimationsEnabled(!animationsEnabled)}
-                    className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-                      animationsEnabled ? "bg-purple-600" : "bg-[#2a2a3e]"
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ${
-                        animationsEnabled ? "translate-x-5" : "translate-x-0"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Divider */}
-                <div className="border-t border-[#2a2a3e]" />
-
-                {/* Font Size */}
-                <div>
-                  <p className="text-[15px] text-white font-medium mb-3">Font Size</p>
-                  <div className="flex gap-2">
-                    {["small", "medium", "large"].map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => setFontSize(size)}
-                        className={`flex-1 py-2 rounded-lg text-[13px] font-medium capitalize transition-all duration-200 ${
-                          fontSize === size
+                    <p className="text-[15px] text-white font-medium mb-3">Font Size</p>
+                    <div className="flex gap-2">
+                      {["small", "medium", "large"].map((size) => (
+                        <button
+                          key={size}
+                          onClick={() => setFontSize(size)}
+                          className={`flex-1 py-2 rounded-lg text-[13px] font-medium capitalize transition-all duration-200 ${fontSize === size
                             ? "bg-purple-600 text-white"
                             : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#252540]"
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
+                            }`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* Typing Speed */}
-                <div>
-                  <p className="text-[15px] text-white font-medium mb-3">Typing Speed</p>
-                  <div className="flex gap-2">
-                    {["slow", "normal", "fast"].map((speed) => (
-                      <button
-                        key={speed}
-                        onClick={() => setTypingSpeed(speed)}
-                        className={`flex-1 py-2 rounded-lg text-[13px] font-medium capitalize transition-all duration-200 ${
-                          typingSpeed === speed
+                  {/* Typing Speed */}
+                  <div>
+                    <p className="text-[15px] text-white font-medium mb-3">Typing Speed</p>
+                    <div className="flex gap-2">
+                      {["slow", "normal", "fast"].map((speed) => (
+                        <button
+                          key={speed}
+                          onClick={() => setTypingSpeed(speed)}
+                          className={`flex-1 py-2 rounded-lg text-[13px] font-medium capitalize transition-all duration-200 ${typingSpeed === speed
                             ? "bg-purple-600 text-white"
                             : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#252540]"
-                        }`}
-                      >
-                        {speed}
-                      </button>
-                    ))}
+                            }`}
+                        >
+                          {speed}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Footer */}
-              <div className="px-6 py-4 border-t border-[#2a2a3e]">
-                <p className="text-[12px] text-gray-600 text-center">Settings are saved automatically</p>
-              </div>
-            </motion.div>
+                {/* Footer */}
+                <div className="px-6 py-4 border-t border-[#2a2a3e]">
+                  <p className="text-[12px] text-gray-600 text-center">Settings are saved automatically</p>
+                </div>
+              </motion.div>
             </div>
           </>
         )}
@@ -343,143 +337,143 @@ export default function Home() {
         animationsEnabled ? (
           <HeroHighlight className="relative z-10">
             <div className="flex-1 flex flex-col items-center justify-center text-center px-4 transition-all duration-500 relative z-20 font-mono">
-            {animationsEnabled ? (
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: [20, -5, 0] }}
-                transition={{ duration: 0.5, ease: [0.4, 0.0, 0.2, 1] }}
-                className="relative mb-8 z-10 text-5xl md:text-7xl bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600 text-center font-sans font-bold"
-              >
-                What can I help with?
-              </motion.h1>
-            ) : (
-              <h1 className="relative mb-8 z-10 text-5xl md:text-7xl bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600 text-center font-sans font-bold">
-                What can I help with?
-              </h1>
-            )}
+              {animationsEnabled ? (
+                <motion.h1
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: [20, -5, 0] }}
+                  transition={{ duration: 0.5, ease: [0.4, 0.0, 0.2, 1] }}
+                  className="relative mb-8 z-10 text-5xl md:text-7xl bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600 text-center font-sans font-bold"
+                >
+                  What can I help with?
+                </motion.h1>
+              ) : (
+                <h1 className="relative mb-8 z-10 text-5xl md:text-7xl bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600 text-center font-sans font-bold">
+                  What can I help with?
+                </h1>
+              )}
 
-            {animationsEnabled ? (
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: [20, -5, 0] }}
-                transition={{ duration: 1, ease: [0.4, 0.0, 0.2, 1] }}
-                className="text-lg text-gray-400"
-              >
-                Powered by the{" "}
-                <Highlight className="text-white text-xl font-bold font-serif">Private, uncensored AI GPT-OSS 120B</Highlight> API.
-                It delivers advanced, context-aware, and human-like
-                responses <br /> for a wide range of AI applications, rivaling
-                the capabilities of top-tier models in both
-                performance and versatility.
-              </motion.p>
-            ) : (
-              <p className="text-lg text-gray-400">
-                Powered by the{" "}
-                <Highlight className="text-white text-xl font-bold font-serif">Private, uncensored AI GPT-OSS 120B</Highlight> API.
-                It delivers advanced, context-aware, and human-like
-                responses <br /> for a wide range of AI applications, rivaling
-                the capabilities of top-tier models in both
-                performance and versatility.
-              </p>
-            )}
+              {animationsEnabled ? (
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: [20, -5, 0] }}
+                  transition={{ duration: 1, ease: [0.4, 0.0, 0.2, 1] }}
+                  className="text-lg text-gray-400"
+                >
+                  Powered by the{" "}
+                  <Highlight className="text-white text-xl font-bold font-serif">Private, uncensored AI GPT-OSS 120B</Highlight> API.
+                  It delivers advanced, context-aware, and human-like
+                  responses <br /> for a wide range of AI applications, rivaling
+                  the capabilities of top-tier models in both
+                  performance and versatility.
+                </motion.p>
+              ) : (
+                <p className="text-lg text-gray-400">
+                  Powered by the{" "}
+                  <Highlight className="text-white text-xl font-bold font-serif">Private, uncensored AI GPT-OSS 120B</Highlight> API.
+                  It delivers advanced, context-aware, and human-like
+                  responses <br /> for a wide range of AI applications, rivaling
+                  the capabilities of top-tier models in both
+                  performance and versatility.
+                </p>
+              )}
 
-            {animationsEnabled ? (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: [20, -5, 0] }}
-                transition={{ duration: 1.5, ease: [0.4, 0.0, 0.2, 1] }}
-                className="flex items-center gap-3 w-full max-w-xl mt-6"
-              >
-                <HoverBorderGradient
-                  containerClassName="rounded-full flex-1 !w-full"
-                  as="div"
-                  duration={1}
-                  className="flex items-center w-full !px-0 !py-0"
+              {animationsEnabled ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: [20, -5, 0] }}
+                  transition={{ duration: 1.5, ease: [0.4, 0.0, 0.2, 1] }}
+                  className="flex items-center gap-3 w-full max-w-xl mt-6"
                 >
-                  <input
-                    type="text"
-                    placeholder="Message GPT-OSS..."
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    className="w-full px-5 py-3.5 bg-transparent text-white text-left placeholder-gray-500 focus:outline-none text-base"
-                  />
-                </HoverBorderGradient>
-                <HoverBorderGradient
-                  containerClassName="rounded-full"
-                  as="button"
-                  duration={1}
-                  onClick={fetchResponse}
-                  className="flex items-center justify-center !px-4 !py-3.5"
-                >
-                  <IoIosSend size={24} className="text-white" />
-                </HoverBorderGradient>
-              </motion.div>
-            ) : (
-              <div className="flex items-center gap-3 w-full max-w-xl mt-6">
-                <HoverBorderGradient
-                  containerClassName="rounded-full flex-1 !w-full"
-                  as="div"
-                  duration={1}
-                  className="flex items-center w-full !px-0 !py-0"
-                >
-                  <input
-                    type="text"
-                    placeholder="Message GPT-OSS..."
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    className="w-full px-5 py-3.5 bg-transparent text-white text-left placeholder-gray-500 focus:outline-none text-base"
-                  />
-                </HoverBorderGradient>
-                <HoverBorderGradient
-                  containerClassName="rounded-full"
-                  as="button"
-                  duration={1}
-                  onClick={fetchResponse}
-                  className="flex items-center justify-center !px-4 !py-3.5"
-                >
-                  <IoIosSend size={24} className="text-white" />
-                </HoverBorderGradient>
-              </div>
-            )}
-
-            {animationsEnabled ? (
-              <motion.nav
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: [20, -5, 0] }}
-                transition={{ duration: 2, ease: [0.4, 0.0, 0.2, 1] }}
-                className="flex flex-row m-8 items-center gap-8"
-              >
-                {footerLinks.map((link, index) => (
-                  <a
-                    href={link.href}
-                    key={index}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 transform hover:scale-150 transition-transform duration-300 ease-in-out"
+                  <HoverBorderGradient
+                    containerClassName="rounded-full flex-1 !w-full"
+                    as="div"
+                    duration={1}
+                    className="flex items-center w-full !px-0 !py-0"
                   >
-                    <span>{link.icon}</span>
-                  </a>
-                ))}
-              </motion.nav>
-            ) : (
-              <nav className="flex flex-row m-8 items-center gap-8">
-                {footerLinks.map((link, index) => (
-                  <a
-                    href={link.href}
-                    key={index}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 transform hover:scale-150 transition-transform duration-300 ease-in-out"
+                    <input
+                      type="text"
+                      placeholder="Message GPT-OSS..."
+                      value={userInput}
+                      onChange={(e) => setUserInput(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      className="w-full px-5 py-3.5 bg-transparent text-white text-left placeholder-gray-500 focus:outline-none text-base"
+                    />
+                  </HoverBorderGradient>
+                  <HoverBorderGradient
+                    containerClassName="rounded-full"
+                    as="button"
+                    duration={1}
+                    onClick={fetchResponse}
+                    className="flex items-center justify-center !px-4 !py-3.5"
                   >
-                    <span>{link.icon}</span>
-                  </a>
-                ))}
-              </nav>
-            )}
-          </div>
-        </HeroHighlight>
+                    <IoIosSend size={24} className="text-white" />
+                  </HoverBorderGradient>
+                </motion.div>
+              ) : (
+                <div className="flex items-center gap-3 w-full max-w-xl mt-6">
+                  <HoverBorderGradient
+                    containerClassName="rounded-full flex-1 !w-full"
+                    as="div"
+                    duration={1}
+                    className="flex items-center w-full !px-0 !py-0"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Message GPT-OSS..."
+                      value={userInput}
+                      onChange={(e) => setUserInput(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      className="w-full px-5 py-3.5 bg-transparent text-white text-left placeholder-gray-500 focus:outline-none text-base"
+                    />
+                  </HoverBorderGradient>
+                  <HoverBorderGradient
+                    containerClassName="rounded-full"
+                    as="button"
+                    duration={1}
+                    onClick={fetchResponse}
+                    className="flex items-center justify-center !px-4 !py-3.5"
+                  >
+                    <IoIosSend size={24} className="text-white" />
+                  </HoverBorderGradient>
+                </div>
+              )}
+
+              {animationsEnabled ? (
+                <motion.nav
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: [20, -5, 0] }}
+                  transition={{ duration: 2, ease: [0.4, 0.0, 0.2, 1] }}
+                  className="flex flex-row m-8 items-center gap-8"
+                >
+                  {footerLinks.map((link, index) => (
+                    <a
+                      href={link.href}
+                      key={index}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 transform hover:scale-150 transition-transform duration-300 ease-in-out"
+                    >
+                      <span>{link.icon}</span>
+                    </a>
+                  ))}
+                </motion.nav>
+              ) : (
+                <nav className="flex flex-row m-8 items-center gap-8">
+                  {footerLinks.map((link, index) => (
+                    <a
+                      href={link.href}
+                      key={index}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 transform hover:scale-150 transition-transform duration-300 ease-in-out"
+                    >
+                      <span>{link.icon}</span>
+                    </a>
+                  ))}
+                </nav>
+              )}
+            </div>
+          </HeroHighlight>
         ) : (
           <div className="relative h-screen flex items-center bg-black justify-center w-screen">
             <div className="flex-1 flex flex-col items-center justify-center text-center px-4 relative z-20 font-mono">
@@ -569,17 +563,15 @@ export default function Home() {
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`flex w-full ${
-                  msg.type === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex w-full ${msg.type === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 <div
                   style={{ fontSize: currentFontSize }}
-                  className={`leading-relaxed break-words ${
-                    msg.type === "user"
-                      ? "bg-[#1a1a2e] text-gray-100 px-5 py-3 rounded-2xl rounded-tr-sm max-w-[75%]"
-                      : "text-gray-200 flex-1 min-w-0"
-                  }`}
+                  className={`leading-relaxed break-words ${msg.type === "user"
+                    ? "bg-[#1a1a2e] text-gray-100 px-5 py-3 rounded-2xl rounded-tr-sm max-w-[75%]"
+                    : "text-gray-200 flex-1 min-w-0"
+                    }`}
                 >
                   {msg.type === "user" ? (
                     <span className="whitespace-pre-wrap">{msg.text}</span>
